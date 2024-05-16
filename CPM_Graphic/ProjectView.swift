@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+
 struct ProjectView: View {
     
     @Environment(\.modelContext) var modelContext
@@ -82,9 +83,9 @@ struct GraphicalResultView: View {
     var body: some View {
         GeometryReader { geo in
             ScrollView {
-                VStack () {
+                HStack(spacing:60) {
                     ForEach(groupedAndSortedActivities(), id: \.self) { activityGroup in
-                        HStack(spacing: 10) {
+                        VStack(spacing:-5) {
                             ForEach(activityGroup, id: \.id) { activity in
                                 ActivityBlockView(activity: activity)
                             }
@@ -107,8 +108,8 @@ struct ActivityBlockView: View {
     
     var body: some View {
         Rectangle()
-            .fill(activity.totalFloat == 0 ? Color.red : Color.blue)
-            .frame(width: 90, height: 120)
+            .fill(activity.totalFloat == 0 ? Color.red : Color.black)
+            .frame(width: 120, height: 70)
         
             .overlay(
                 VStack {
@@ -132,10 +133,10 @@ struct ActivityBlockView: View {
                     
                     Color.clear.onAppear {
                         let frame = geometry.frame(in: .global)
-                        let topCenter = CGPoint(x: frame.midX, y: frame.minY)
-                        let bottomCenter = CGPoint(x: frame.midX, y: frame.maxY)
+                        let rightCenter = CGPoint(x: frame.minX, y: frame.midY)
+                        let leftCenter = CGPoint(x: frame.maxX, y: frame.midY)
                         
-                        activityPositions.updatePosition(for: activity.id, top: topCenter, bottom: bottomCenter)
+                        activityPositions.updatePosition(for: activity.id, right: rightCenter, left: leftCenter)
                     }
                 }
                 
@@ -147,14 +148,14 @@ struct ActivityBlockView: View {
 
 
 class ActivityPositions: ObservableObject {
-    // Maps Activity ID to its rectangle's top and bottom center positions
-    @Published var positions: [Int: (top: CGPoint, bottom: CGPoint)] = [:]
+    // Maps Activity ID to its rectangle's right and left center positions
+    @Published var positions: [Int: (right: CGPoint, left: CGPoint)] = [:]
     
-    func updatePosition(for id: Int, top: CGPoint, bottom: CGPoint) {
-        positions[id] = (top, bottom)
+    func updatePosition(for id: Int, right: CGPoint, left: CGPoint) {
+        positions[id] = (right, left)
     }
     
-    func position(for id: Int) -> (top: CGPoint, bottom: CGPoint)? {
+    func position(for id: Int) -> (right: CGPoint, left: CGPoint)? {
         return positions[id]
     }
 }
@@ -175,7 +176,7 @@ struct ArrowOverlay: View {
                 guard let positions = activityPositions.position(for: activity.id) else { continue }
                 for successor in activity.successors {
                     guard let successorPositions = activityPositions.position(for: successor.id) else { continue }
-                    drawArrow(from: positions.bottom, to: successorPositions.top, in: context)
+                    drawArrow(from: positions.left, to: successorPositions.right, in: context)
                 }
             }
         }

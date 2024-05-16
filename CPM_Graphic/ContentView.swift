@@ -6,6 +6,7 @@
 //
 import SwiftData
 import SwiftUI
+
 struct ContentView: View {
     @Environment(\.modelContext) var modelContext
     @State private var path = NavigationPath()
